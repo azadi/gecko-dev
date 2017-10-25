@@ -1,0 +1,168 @@
+diff --git a/mingw-w64-headers/include/d2d1.h b/mingw-w64-headers/include/d2d1.h
+old mode 100644
+new mode 100755
+index bc457850..46be7cad
+--- a/mingw-w64-headers/include/d2d1.h
++++ b/mingw-w64-headers/include/d2d1.h
+@@ -664,9 +664,30 @@ DEFINE_GUID(IID_ID2D1Bitmap, 0xa2296057,0xea42,0x4099,0x98,0x3b,0x53,0x9f,0xb6,0
+ #ifndef D2D_USE_C_DEFINITIONS
+ 
+ interface ID2D1Bitmap : public ID2D1Image {
+-    STDMETHOD_(D2D1_SIZE_F, GetSize)(void) const PURE;
+-    STDMETHOD_(D2D1_SIZE_U, GetPixelSize)(void) const PURE;
+-    STDMETHOD_(D2D1_PIXEL_FORMAT, GetPixelFormat)(void) const PURE;
++    virtual D2D1_SIZE_F* STDMETHODCALLTYPE GetSize(
++        D2D1_SIZE_F *__ret) = 0;
++    D2D1_SIZE_F STDMETHODCALLTYPE GetSize(
++        )
++    {
++        D2D1_SIZE_F __ret;
++        return *GetSize(&__ret);
++    }
++    virtual D2D1_SIZE_U* STDMETHODCALLTYPE GetPixelSize(
++        D2D1_SIZE_U *__ret) = 0;
++    D2D1_SIZE_U STDMETHODCALLTYPE GetPixelSize(
++        )
++    {
++        D2D1_SIZE_U __ret;
++        return *GetPixelSize(&__ret);
++    }
++    virtual D2D1_PIXEL_FORMAT* STDMETHODCALLTYPE GetPixelFormat(
++        D2D1_PIXEL_FORMAT *__ret) = 0;
++    D2D1_PIXEL_FORMAT STDMETHODCALLTYPE GetPixelFormat(
++        )
++    {
++        D2D1_PIXEL_FORMAT __ret;
++        return *GetPixelFormat(&__ret);
++    }
+     STDMETHOD_(void, GetDpi)(FLOAT *dpiX, FLOAT *dpiY) const PURE;
+     STDMETHOD(CopyFromBitmap)(const D2D1_POINT_2U *destPoint, ID2D1Bitmap *bitmap, const D2D1_RECT_U *srcRect) PURE;
+     STDMETHOD(CopyFromRenderTarget)(const D2D1_POINT_2U *destPoint, ID2D1RenderTarget *renderTarget, const D2D1_RECT_U *srcRect) PURE;
+@@ -809,11 +830,40 @@ interface ID2D1RenderTarget : public ID2D1Resource {
+     STDMETHOD_(void, Clear)(const D2D1_COLOR_F *clearColor = NULL) PURE;
+     STDMETHOD_(void, BeginDraw)(void) PURE;
+     STDMETHOD(EndDraw)(D2D1_TAG *tag1 = NULL, D2D1_TAG *tag2 = NULL) PURE;
+-    STDMETHOD_(D2D1_PIXEL_FORMAT, GetPixelFormat)(void) const PURE;
++    
++
++    virtual D2D1_PIXEL_FORMAT* STDMETHODCALLTYPE GetPixelFormat(
++        D2D1_PIXEL_FORMAT *__ret) = 0;
++    D2D1_PIXEL_FORMAT STDMETHODCALLTYPE GetPixelFormat(
++        )
++    {
++        D2D1_PIXEL_FORMAT __ret;
++        return *GetPixelFormat(&__ret);
++    }
++    
++
+     STDMETHOD_(void, SetDpi)(FLOAT dpiX, FLOAT dpiY) PURE;
+     STDMETHOD_(void, GetDpi)(FLOAT *dpiX, FLOAT *dpiY) const PURE;
+-    STDMETHOD_(D2D1_SIZE_F, GetSize)(void) const PURE;
+-    STDMETHOD_(D2D1_SIZE_U, GetPixelSize)(void) const PURE;
++    
++    virtual D2D1_SIZE_F* STDMETHODCALLTYPE GetSize(
++        D2D1_SIZE_F *__ret) = 0;
++    D2D1_SIZE_F STDMETHODCALLTYPE GetSize(
++        )
++    {
++        D2D1_SIZE_F __ret;
++        return *GetSize(&__ret);
++    }
++
++    virtual D2D1_SIZE_U* STDMETHODCALLTYPE GetPixelSize(
++        D2D1_SIZE_U *__ret) = 0;
++    D2D1_SIZE_U STDMETHODCALLTYPE GetPixelSize(
++        )
++    {
++        D2D1_SIZE_U __ret;
++        return *GetPixelSize(&__ret);
++    }
++
++
+     STDMETHOD_(UINT32, GetMaximumBitmapSize)(void) const PURE;
+     STDMETHOD_(BOOL, IsSupported)(const D2D1_RENDER_TARGET_PROPERTIES *renderTargetProperties) const PURE;
+ 
+@@ -1962,7 +2012,14 @@ DEFINE_GUID(IID_ID2D1Layer, 0x2cd9069b,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0x
+ #ifndef D2D_USE_C_DEFINITIONS
+ 
+ interface ID2D1Layer : public ID2D1Resource {
+-    STDMETHOD_(D2D1_SIZE_F, GetSize)(void) const PURE;
++    virtual D2D1_SIZE_F* STDMETHODCALLTYPE GetSize(
++        D2D1_SIZE_F *__ret) = 0;
++    D2D1_SIZE_F STDMETHODCALLTYPE GetSize(
++        )
++    {
++        D2D1_SIZE_F __ret;
++        return *GetSize(&__ret);
++    }
+ };
+ 
+ #else
+@@ -1992,8 +2049,22 @@ DEFINE_GUID(IID_ID2D1LinearGradientBrush, 0x2cd906ab,0x12e2,0x11dc,0x9f,0xed,0x0
+ interface ID2D1LinearGradientBrush : public ID2D1Brush {
+     STDMETHOD_(void, SetStartPoint)(D2D1_POINT_2F startPoint) PURE;
+     STDMETHOD_(void, SetEndPoint)(D2D1_POINT_2F endPoint) PURE;
+-    STDMETHOD_(D2D1_POINT_2F, GetStartPoint)(void) const PURE;
+-    STDMETHOD_(D2D1_POINT_2F, GetEndPoint)(void) const PURE;
++    virtual D2D1_POINT_2F* STDMETHODCALLTYPE GetStartPoint(
++        D2D1_POINT_2F *__ret) = 0;
++    D2D1_POINT_2F STDMETHODCALLTYPE GetStartPoint(
++        )
++    {
++        D2D1_POINT_2F __ret;
++        return *GetStartPoint(&__ret);
++    }
++    virtual D2D1_POINT_2F* STDMETHODCALLTYPE GetEndPoint(
++        D2D1_POINT_2F *__ret) = 0;
++    D2D1_POINT_2F STDMETHODCALLTYPE GetEndPoint(
++        )
++    {
++        D2D1_POINT_2F __ret;
++        return *GetEndPoint(&__ret);
++    }
+     STDMETHOD_(void, GetGradientStopCollection)(ID2D1GradientStopCollection **gradientStopCollection) const PURE;
+ };
+ 
+@@ -2116,8 +2187,24 @@ interface ID2D1RadialGradientBrush : public ID2D1Brush {
+     STDMETHOD_(void, SetGradientOriginOffset)(D2D1_POINT_2F gradientOriginOffset) PURE;
+     STDMETHOD_(void, SetRadiusX)(FLOAT radiusX) PURE;
+     STDMETHOD_(void, SetRadiusY)(FLOAT radiusY) PURE;
+-    STDMETHOD_(D2D1_POINT_2F, GetCenter)(void) const PURE;
+-    STDMETHOD_(D2D1_POINT_2F, GetGradientOriginOffset)(void) const PURE;
++    
++    virtual D2D1_POINT_2F* STDMETHODCALLTYPE GetCenter(
++        D2D1_POINT_2F *__ret) = 0;
++    D2D1_POINT_2F STDMETHODCALLTYPE GetCenter(
++        )
++    {
++        D2D1_POINT_2F __ret;
++        return *GetCenter(&__ret);
++    }
++    virtual D2D1_POINT_2F* STDMETHODCALLTYPE GetGradientOriginOffset(
++        D2D1_POINT_2F *__ret) = 0;
++    D2D1_POINT_2F STDMETHODCALLTYPE GetGradientOriginOffset(
++        )
++    {
++        D2D1_POINT_2F __ret;
++        return *GetGradientOriginOffset(&__ret);
++    }
++    
+     STDMETHOD_(FLOAT, GetRadiusX)(void) const PURE;
+     STDMETHOD_(FLOAT, GetRadiusY)(void) const PURE;
+     STDMETHOD_(void, GetGradientStopCollection)(ID2D1GradientStopCollection **gradientStopCollection) const PURE;
+@@ -2251,7 +2338,14 @@ DEFINE_GUID(IID_ID2D1SolidColorBrush, 0x2cd906a9,0x12e2,0x11dc,0x9f,0xed,0x00,0x
+ 
+ interface ID2D1SolidColorBrush : public ID2D1Brush {
+     STDMETHOD_(void, SetColor)(const D2D1_COLOR_F *color) PURE;
+-    STDMETHOD_(D2D1_COLOR_F, GetColor)(void) const PURE;
++    virtual D2D1_COLOR_F* STDMETHODCALLTYPE GetColor(
++        D2D1_COLOR_F *__ret) = 0;
++    D2D1_COLOR_F STDMETHODCALLTYPE GetColor(
++        )
++    {
++        D2D1_COLOR_F __ret;
++        return *GetColor(&__ret);
++    }
+ 
+     void SetColor(const D2D1_COLOR_F &color) {
+         SetColor(&color);

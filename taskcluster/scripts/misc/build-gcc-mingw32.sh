@@ -42,8 +42,11 @@ ae79f8d41d8a86456b68607e9ca398d00f8b7342d1d83bcf4428178ac45380c7  mpc-0.8.2.tar.
 ca498c1c7a74dd37a576f353312d1e68d490978de4395fa28f1cbd46a364e658  mpfr-3.1.5.tar.bz2
 EOF
 
+
+
 prepare
 prepare_mingw
+apply_patch mingw-w64 $data_dir/GetSize.patch
 build_binutils
 build_gcc_and_mingw
 
