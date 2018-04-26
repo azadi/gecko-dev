@@ -246,6 +246,21 @@ windows10-64-qr/opt:
         - windows-qr-talos
 
 
+# MinGW Builds will be special. But let's throw spaghetti at the wall and see what sticks.
+windows10-64-mingw32/debug:
+    build-platform: win64-mingw32/debug
+    test-sets:
+        - windows-tests
+        - mochitest-headless
+
+windows10-64-mingw32/opt:
+    build-platform: win64-mingw32/opt
+    test-sets:
+        - awsy
+        - desktop-screenshot-capture
+        - windows-tests
+        - mochitest-headless
+
 ##
 # MacOS X platforms (matching /macosx.*/)
 

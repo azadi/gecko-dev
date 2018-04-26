@@ -44,6 +44,7 @@ BUILDER_NAME_PREFIX = {
     'windows10-64-stylo-disabled': 'Windows 10 64-bit',
     'windows10-64-ccov': 'Windows 10 64-bit Code Coverage',
     'windows10-64-qr': 'Windows 10 64-bit',
+    'windows10-64-mingw32': 'Windows 10 64-bit MinGW',
     'windows7-32': 'Windows 7 32-bit',
     ('windows7-32', 'virtual-with-gpu'): 'Windows 7 VM-GFX 32-bit',
     'windows7-32-nightly': 'Windows 7 32-bit',
