@@ -37,9 +37,7 @@ ac_add_options --disable-accessibility # https://sourceforge.net/p/mingw-w64/bug
 
 # Long story
 ac_add_options --disable-stylo # Bug 1390583
-
-# Sandbox isn't support on MinGW 64 yet
-ac_add_options --disable-sandbox
+ac_add_options --disable-jemalloc # Bug 1466192
 
 # These aren't supported on mingw at this time
 ac_add_options --disable-webrtc # Bug 1393901
