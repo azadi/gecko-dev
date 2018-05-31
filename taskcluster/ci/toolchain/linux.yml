@@ -514,12 +514,12 @@ linux64-wine:
         script: build-wine.sh
         toolchain-artifact: public/build/wine.tar.xz
 
-linux64-mingw32-gcc:
-    description: "GCC toolchain build for MinGW32 Cross Compile"
+linux64-mingw32-gcc-x86:
+    description: "x86 GCC toolchain build for MinGW32 Cross Compile"
     treeherder:
         kind: build
         platform: toolchains/opt
-        symbol: TMW(mingw32-gcc)
+        symbol: TMW(mingw32-gcc-x86)
         tier: 2
     worker-type: aws-provisioner-v1/gecko-{level}-b-linux
     worker:
@@ -528,6 +528,30 @@ linux64-mingw32-gcc:
     run:
         using: toolchain-script
         script: build-gcc-mingw32.sh
+        arguments: [
+            'i686-w64-mingw32'
+        ]
+        resources:
+            - 'build/unix/build-gcc/build-gcc.sh'
+        toolchain-artifact: public/build/mingw32.tar.xz
+
+linux64-mingw32-gcc-x64:
+    description: "x64 GCC toolchain build for MinGW32 Cross Compile"
+    treeherder:
+        kind: build
+        platform: toolchains/opt
+        symbol: TMW(mingw32-gcc-x64)
+        tier: 2
+    worker-type: aws-provisioner-v1/gecko-{level}-b-linux
+    worker:
+        docker-image: {in-tree: mingw32-build}
+        max-run-time: 10800
+    run:
+        using: toolchain-script
+        script: build-gcc-mingw32.sh
+        arguments: [
+            'x86_64-w64-mingw32'
+        ]
         resources:
             - 'build/unix/build-gcc/build-gcc.sh'
         toolchain-artifact: public/build/mingw32.tar.xz
@@ -551,7 +575,7 @@ linux64-mingw32-nsis:
             - 'taskcluster/scripts/misc/build-gcc-mingw32.sh'
         toolchain-artifact: public/build/nsis.tar.xz
     toolchains:
-        - linux64-mingw32-gcc
+        - linux64-mingw32-gcc-x86
 
 linux64-mingw32-fxc2:
     description: "fxc2.exe build for MinGW32 Cross Compile"
@@ -572,4 +596,4 @@ linux64-mingw32-fxc2:
             - 'taskcluster/scripts/misc/build-gcc-mingw32.sh'
         toolchain-artifact: public/build/fxc2.tar.xz
     toolchains:
-        - linux64-mingw32-gcc
+        - linux64-mingw32-gcc-x86
