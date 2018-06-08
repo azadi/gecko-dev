@@ -1,0 +1,197 @@
+# HG changeset patch
+# User Tom Ritter <tom@mozilla.com>
+# Date 1528394907 18000
+#      Thu Jun 07 13:08:27 2018 -0500
+# Node ID 8fa0d9d7eac9ad860a20c71eda292418b92cca26
+# Parent  59e884512f6246ab14ffdad8f5ee34ccf865fd91
+Bug 1461421 Use OffsetOf to calculate the location of param_info_ rather than assuming it's at the end of the parent class r?bobowen
+
+diff --git a/security/sandbox/chromium/sandbox/win/src/crosscall_params.h b/security/sandbox/chromium/sandbox/win/src/crosscall_params.h
+--- a/security/sandbox/chromium/sandbox/win/src/crosscall_params.h
++++ b/security/sandbox/chromium/sandbox/win/src/crosscall_params.h
+@@ -55,16 +55,17 @@ union MultiType {
+   ULONG_PTR ulong_ptr;
+ };
+ 
+ // Maximum number of IPC parameters currently supported.
+ // To increase this value, we have to:
+ //  - Add another Callback typedef to Dispatcher.
+ //  - Add another case to the switch on SharedMemIPCServer::InvokeCallback.
+ //  - Add another case to the switch in GetActualAndMaxBufferSize
++//  - Add another case to the switch in GetOffsetOfFirstMemberOfActualCallParams
+ const int kMaxIpcParams = 9;
+ 
+ // Contains the information about a parameter in the ipc buffer.
+ struct ParamInfo {
+   ArgType type_;
+   uint32_t offset_;
+   uint32_t size_;
+ };
+@@ -87,16 +88,18 @@ struct CrossCallReturn {
+   // Number of extended return values.
+   uint32_t extended_count;
+   // for calls that should return a windows handle. It is found here.
+   HANDLE handle;
+   // The array of extended values.
+   MultiType extended[kExtendedReturnCount];
+ };
+ 
++uint32_t GetOffsetOfFirstMemberOfActualCallParams(uint32_t param_count);
++
+ // CrossCallParams base class that models the input params all packed in a
+ // single compact memory blob. The representation can vary but in general a
+ // given child of this class is meant to represent all input parameters
+ // necessary to make a IPC call.
+ //
+ // This class cannot have virtual members because its assumed the IPC
+ // parameters start from the 'this' pointer to the end, which is defined by
+ // one of the subclasses
+@@ -271,16 +274,18 @@ class ActualCallParams : public CrossCal
+  protected:
+   ActualCallParams() : CrossCallParams(0, NUMBER_PARAMS) { }
+ 
+  private:
+   ParamInfo param_info_[NUMBER_PARAMS + 1];
+   char parameters_[BLOCK_SIZE - sizeof(CrossCallParams)
+                    - sizeof(ParamInfo) * (NUMBER_PARAMS + 1)];
+   DISALLOW_COPY_AND_ASSIGN(ActualCallParams);
++
++  friend uint32_t GetOffsetOfFirstMemberOfActualCallParams(uint32_t param_count);
+ };
+ 
+ static_assert(sizeof(ActualCallParams<1, 1024>) == 1024, "bad size buffer");
+ static_assert(sizeof(ActualCallParams<2, 1024>) == 1024, "bad size buffer");
+ static_assert(sizeof(ActualCallParams<3, 1024>) == 1024, "bad size buffer");
+ 
+ }  // namespace sandbox
+ 
+diff --git a/security/sandbox/chromium/sandbox/win/src/crosscall_server.cc b/security/sandbox/chromium/sandbox/win/src/crosscall_server.cc
+--- a/security/sandbox/chromium/sandbox/win/src/crosscall_server.cc
++++ b/security/sandbox/chromium/sandbox/win/src/crosscall_server.cc
+@@ -22,30 +22,31 @@ namespace {
+ 
+ // The buffer for a message must match the max channel size.
+ const size_t kMaxBufferSize = sandbox::kIPCChannelSize;
+ 
+ }
+ 
+ namespace sandbox {
+ 
++// The template types are used to calculate the maximum expected size.
++typedef ActualCallParams<0, kMaxBufferSize> ActualCP0;
++typedef ActualCallParams<1, kMaxBufferSize> ActualCP1;
++typedef ActualCallParams<2, kMaxBufferSize> ActualCP2;
++typedef ActualCallParams<3, kMaxBufferSize> ActualCP3;
++typedef ActualCallParams<4, kMaxBufferSize> ActualCP4;
++typedef ActualCallParams<5, kMaxBufferSize> ActualCP5;
++typedef ActualCallParams<6, kMaxBufferSize> ActualCP6;
++typedef ActualCallParams<7, kMaxBufferSize> ActualCP7;
++typedef ActualCallParams<8, kMaxBufferSize> ActualCP8;
++typedef ActualCallParams<9, kMaxBufferSize> ActualCP9;
++
+ // Returns the actual size for the parameters in an IPC buffer. Returns
+ // zero if the |param_count| is zero or too big.
+ uint32_t GetActualBufferSize(uint32_t param_count, void* buffer_base) {
+-  // The template types are used to calculate the maximum expected size.
+-  typedef ActualCallParams<1, kMaxBufferSize> ActualCP1;
+-  typedef ActualCallParams<2, kMaxBufferSize> ActualCP2;
+-  typedef ActualCallParams<3, kMaxBufferSize> ActualCP3;
+-  typedef ActualCallParams<4, kMaxBufferSize> ActualCP4;
+-  typedef ActualCallParams<5, kMaxBufferSize> ActualCP5;
+-  typedef ActualCallParams<6, kMaxBufferSize> ActualCP6;
+-  typedef ActualCallParams<7, kMaxBufferSize> ActualCP7;
+-  typedef ActualCallParams<8, kMaxBufferSize> ActualCP8;
+-  typedef ActualCallParams<9, kMaxBufferSize> ActualCP9;
+-
+   // Retrieve the actual size and the maximum size of the params buffer.
+   switch (param_count) {
+     case 0:
+       return 0;
+     case 1:
+       return reinterpret_cast<ActualCP1*>(buffer_base)->GetSize();
+     case 2:
+       return reinterpret_cast<ActualCP2*>(buffer_base)->GetSize();
+@@ -63,16 +64,45 @@ uint32_t GetActualBufferSize(uint32_t pa
+       return reinterpret_cast<ActualCP8*>(buffer_base)->GetSize();
+     case 9:
+       return reinterpret_cast<ActualCP9*>(buffer_base)->GetSize();
+     default:
+       return 0;
+   }
+ }
+ 
++// Returns the actual size for the parameters in an IPC buffer. Returns
++// zero if the |param_count| is zero or too big.
++uint32_t GetOffsetOfFirstMemberOfActualCallParams(uint32_t param_count) {
++  switch (param_count) {
++    case 0:
++      return offsetof(ActualCP0, param_info_);
++    case 1:
++      return offsetof(ActualCP1, param_info_);
++    case 2:
++      return offsetof(ActualCP2, param_info_);
++    case 3:
++      return offsetof(ActualCP3, param_info_);
++    case 4:
++      return offsetof(ActualCP4, param_info_);
++    case 5:
++      return offsetof(ActualCP5, param_info_);
++    case 6:
++      return offsetof(ActualCP6, param_info_);
++    case 7:
++      return offsetof(ActualCP7, param_info_);
++    case 8:
++      return offsetof(ActualCP8, param_info_);
++    case 9:
++      return offsetof(ActualCP9, param_info_);
++    default:
++      return 0;
++  }
++}
++
+ // Verifies that the declared sizes of an IPC buffer are within range.
+ bool IsSizeWithinRange(uint32_t buffer_size,
+                        uint32_t min_declared_size,
+                        uint32_t declared_size) {
+   if ((buffer_size < min_declared_size) ||
+       (sizeof(CrossCallParamsEx) > min_declared_size)) {
+     // Minimal computed size bigger than existing buffer or param_count
+     // integer overflow.
+@@ -132,17 +162,17 @@ CrossCallParamsEx* CrossCallParamsEx::Cr
+   // will catch memory access violations so we don't crash.
+   __try {
+     CrossCallParams* call_params =
+         reinterpret_cast<CrossCallParams*>(buffer_base);
+ 
+     // Check against the minimum size given the number of stated params
+     // if too small we bail out.
+     param_count = call_params->GetParamsCount();
+-    min_declared_size = sizeof(CrossCallParams) +
++    min_declared_size = GetOffsetOfFirstMemberOfActualCallParams(param_count) +
+                         ((param_count + 1) * sizeof(ParamInfo));
+ 
+     // Retrieve the declared size which if it fails returns 0.
+     declared_size = GetActualBufferSize(param_count, buffer_base);
+ 
+     if (!IsSizeWithinRange(buffer_size, min_declared_size, declared_size))
+       return NULL;
+ 
+@@ -152,17 +182,17 @@ CrossCallParamsEx* CrossCallParamsEx::Cr
+     copied_params = reinterpret_cast<CrossCallParamsEx*>(backing_mem);
+     memcpy(backing_mem, call_params, declared_size);
+ 
+     // Avoid compiler optimizations across this point. Any value stored in
+     // memory should be stored for real, and values previously read from memory
+     // should be actually read.
+     _ReadWriteBarrier();
+ 
+-    min_declared_size = sizeof(CrossCallParams) +
++    min_declared_size = GetOffsetOfFirstMemberOfActualCallParams(param_count) +
+                         ((param_count + 1) * sizeof(ParamInfo));
+ 
+     // Check that the copied buffer is still valid.
+     if (copied_params->GetParamsCount() != param_count ||
+         GetActualBufferSize(param_count, backing_mem) != declared_size ||
+         !IsSizeWithinRange(buffer_size, min_declared_size, declared_size)) {
+       delete [] backing_mem;
+       return NULL;
